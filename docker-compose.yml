@@ -1,0 +1,37 @@
+volumes:
+  mongodb:
+
+networks:
+  backend:
+
+services:
+  api:
+    container_name: api
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: sh -c "npm run start"
+    restart: always
+    ports:
+      - ${FASTIFY_PORT}:${FASTIFY_PORT}
+    depends_on:
+      - mongo_db
+    networks:
+      backend:
+
+  mongo_db:
+    container_name: db
+    image: mongo:7.0.0
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USER}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+      - MONGO_INITDB_DATABASE=${MONGODB_DB_NAME}
+    restart: unless-stopped
+    ports:
+      - ${MONGODB_PORT}:27017
+    volumes:
+      - mongodb:/data/db
+    networks:
+      - backend
